@@ -9,19 +9,28 @@ import io
 # Initialize the OpenAI client
 client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
-def extract_text_from_pdf(pdf_path):
-    print("[DEBUG] Extracting text from PDF")
+def extract_text_from_pdf(pdf_path, page_number):
+    print(f"[DEBUG] Extracting text from PDF, page {page_number}")
     text = ""
     with open(pdf_path, 'rb') as file:
         pdf_reader = PdfReader(file)
-        for page in pdf_reader.pages:
-            text += page.extract_text() + "\n"
+        if 0 <= page_number < len(pdf_reader.pages):
+            text = pdf_reader.pages[page_number].extract_text()
+        else:
+            print(f"[ERROR] Page {page_number} does not exist in the PDF.")
     return text
 
 def clean_text(text):
     print("[DEBUG] Cleaning extracted text")
     soup = BeautifulSoup(text, 'html.parser')
     return soup.get_text()
+
+def save_page_content(text, pdf_path, page_number):
+    base_name = os.path.splitext(os.path.basename(pdf_path))[0]
+    output_file = f"{base_name}-page-{page_number}.html"
+    with open(output_file, 'w', encoding='utf-8') as f:
+        f.write(text)
+    print(f"[DEBUG] Saved page content to {output_file}")
 
 def text_to_speech(text):
     print("[DEBUG] Converting text to speech")
@@ -54,12 +63,16 @@ def combine_audio(audio_contents, output_path):
     combined_audio.export(output_path, format="mp3")
     print(f"[DEBUG] Audio saved to {output_path}")
 
-def pdf_to_audio(pdf_path):
+def pdf_to_audio(pdf_path, page_number):
     # Generate output path
-    output_path = os.path.splitext(pdf_path)[0] + ".mp3"
+    base_name = os.path.splitext(pdf_path)[0]
+    output_path = f"{base_name}-page-{page_number}.mp3"
     
     # Extract text from PDF
-    text = extract_text_from_pdf(pdf_path)
+    text = extract_text_from_pdf(pdf_path, page_number)
+    
+    # Save the page content for debugging
+    save_page_content(text, pdf_path, page_number)
     
     # Clean the extracted text
     cleaned_text = clean_text(text)
@@ -73,8 +86,8 @@ def pdf_to_audio(pdf_path):
     return output_path
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python pdf_to_audio.py <path_to_pdf_file>")
+    if len(sys.argv) != 3:
+        print("Usage: python pdf_to_audio.py <path_to_pdf_file> <page_number>")
         sys.exit(1)
     
     pdf_path = sys.argv[1]
@@ -82,5 +95,11 @@ if __name__ == "__main__":
         print(f"Error: The file '{pdf_path}' does not exist.")
         sys.exit(1)
     
-    output_path = pdf_to_audio(pdf_path)
-    print(f"PDF to Audio conversion completed! Audio saved as: {output_path}")
+    try:
+        page_number = int(sys.argv[2])
+    except ValueError:
+        print("Error: Page number must be an integer.")
+        sys.exit(1)
+    
+    output_path = pdf_to_audio(pdf_path, page_number)
+    print(f"PDF page to Audio conversion completed! Audio saved as: {output_path}")
