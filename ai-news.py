@@ -23,8 +23,7 @@ NEWS_SOURCES = [
     {"url": "https://aider.chat/blog/", "keywords": ["AI", "Artificial Intelligence", "Machine Learning", "Deep Learning", "NLP"]},
     {"url": "https://big-agi.com/blog", "keywords": ["AI", "Artificial Intelligence", "Machine Learning", "Deep Learning", "NLP"]},
     {"url": "https://www.builder.io/", "keywords": ["AI", "Artificial Intelligence", "Machine Learning", "Deep Learning", "NLP"]},
-    {"url": "https://codesubmit.io/blog/ai-code-tools", "keywords": ["AI", "Artificial Intelligence", "Machine Learning", "Deep Learning", "NLP"]},
-    {"url": "https://www.skool.com/ai-foundations/about", "keywords": ["AI", "Artificial Intelligence", "Machine Learning", "Deep Learning", "NLP"]},
+    {"url": "https://codesubmit.io/blog/ai-code-tools", "keywords": ["AI", "Artificial Intelligence", "Machine Learning", "Deep Learning", "NLP"]}
 ]
 
 def get_website_content(url):
