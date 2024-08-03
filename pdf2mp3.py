@@ -12,12 +12,19 @@ client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 def extract_text_from_pdf(pdf_path, page_number):
     print(f"[DEBUG] Extracting text from PDF, page {page_number}")
     text = ""
-    with open(pdf_path, 'rb') as file:
-        pdf_reader = PdfReader(file)
-        if 0 <= page_number < len(pdf_reader.pages):
-            text = pdf_reader.pages[page_number].extract_text()
-        else:
-            print(f"[ERROR] Page {page_number} does not exist in the PDF.")
+    try:
+        with open(pdf_path, 'rb') as file:
+            pdf_reader = PdfReader(file)
+            if 0 <= page_number < len(pdf_reader.pages):
+                text = pdf_reader.pages[page_number].extract_text()
+            else:
+                print(f"[ERROR] Page {page_number} does not exist in the PDF.")
+    except ImportError:
+        print("[ERROR] PyCryptodome is required for handling this PDF. Please install it using: pip install pycryptodome")
+        sys.exit(1)
+    except Exception as e:
+        print(f"[ERROR] An error occurred while reading the PDF: {str(e)}")
+        sys.exit(1)
     return text
 
 def clean_text(text):
@@ -71,6 +78,10 @@ def pdf_to_audio(pdf_path, page_number):
     # Extract text from PDF
     text = extract_text_from_pdf(pdf_path, page_number)
     
+    if not text:
+        print("[ERROR] No text extracted from the PDF. Exiting.")
+        sys.exit(1)
+    
     # Save the page content for debugging
     save_page_content(text, pdf_path, page_number)
     
@@ -101,5 +112,9 @@ if __name__ == "__main__":
         print("Error: Page number must be an integer.")
         sys.exit(1)
     
-    output_path = pdf_to_audio(pdf_path, page_number)
-    print(f"PDF page to Audio conversion completed! Audio saved as: {output_path}")
+    try:
+        output_path = pdf_to_audio(pdf_path, page_number)
+        print(f"PDF page to Audio conversion completed! Audio saved as: {output_path}")
+    except Exception as e:
+        print(f"An error occurred during conversion: {str(e)}")
+        sys.exit(1)
