@@ -53,7 +53,7 @@ def clean_html(html_content):
     lines = (line.strip() for line in text.splitlines())
     # Break multi-headlines into a line each
     chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
-    # Drop blank lines
+    # Drop blank lines and join with newline characters
     text = '\n'.join(chunk for chunk in chunks if chunk)
     
     print("[DEBUG] HTML content cleaned")
@@ -79,18 +79,22 @@ def save_current_content(url, content):
         "content": content,
         "last_processed": time.time()
     }
-    with open(filename, 'w') as f:
-        json.dump(state, f)
+    with open(filename, 'w', newline='\n') as f:  # Ensure newlines are written correctly
+        json.dump(state, f, indent=2)  # Use indentation for better readability
 
 def get_content_diff(previous_content, current_content):
     if not previous_content:
         return current_content
     
-    previous_lines = set(previous_content.split('\n'))
+    previous_lines = previous_content.split('\n')
     current_lines = current_content.split('\n')
     
-    new_lines = [line for line in current_lines if line not in previous_lines]
-    return '\n'.join(new_lines)
+    diff = []
+    for line in current_lines:
+        if line not in previous_lines:
+            diff.append(line)
+    
+    return '\n'.join(diff)
 
 def num_tokens_from_string(string: str, encoding_name: str) -> int:
     encoding = tiktoken.get_encoding(encoding_name)
@@ -180,7 +184,7 @@ def process_source(source):
         
         new_content = get_content_diff(previous_content, cleaned_content)
         
-        if new_content:
+        if new_content.strip():  # Check if there's any non-whitespace content
             print(f"[DEBUG] New content found, starting analysis")
             analysis = get_gpt4_analysis(new_content, url, keywords)
             if analysis:
