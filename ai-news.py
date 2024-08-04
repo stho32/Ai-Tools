@@ -5,7 +5,7 @@ from pdf_audio_tools import (
     load_previous_content,
     save_current_content,
     get_content_diff,
-    get_gpt4_analysis,
+    call_gpt,
     text_to_speech,
     play_audio
 )
@@ -19,6 +19,13 @@ NEWS_SOURCES = [
     {"url": "https://www.builder.io/", "keywords": ["AI", "Artificial Intelligence", "Machine Learning", "Deep Learning", "NLP"]},
     {"url": "https://codesubmit.io/blog/ai-code-tools", "keywords": ["AI", "Artificial Intelligence", "Machine Learning", "Deep Learning", "NLP"]}
 ]
+
+def get_gpt4_analysis(content, url, keywords):
+    print(f"[DEBUG] Starting GPT-4 analysis for {url}")
+    keywords_str = ", ".join(keywords)
+    system_message = "You are an AI assistant capable of analyzing web content and extracting relevant information about artificial intelligence."
+    user_message = f"Please analyze the following new content from {url} and provide a summary of the latest news and developments related to artificial intelligence, focusing on these keywords: {keywords_str}. Highlight the most recent and important AI developments. Here's the new content:\n\n{content}"
+    return call_gpt(system_message, user_message)
 
 def process_source(source):
     url = source["url"]
