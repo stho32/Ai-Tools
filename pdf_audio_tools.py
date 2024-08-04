@@ -1,10 +1,15 @@
 import os
 import random
+import json
+import hashlib
+import requests
 from PyPDF2 import PdfReader
+from bs4 import BeautifulSoup
 from openai import OpenAI
 from pydub import AudioSegment
 import io
 import sys
+import time
 
 # Initialize the OpenAI client
 client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
@@ -81,3 +86,72 @@ def play_audio(audio_contents):
             print(f"[DEBUG] Error saving audio: {e}")
     else:
         print("[DEBUG] No audio content to play")
+
+def get_website_content(url):
+    print(f"[DEBUG] Attempting to fetch content from {url}")
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        print(f"[DEBUG] Successfully fetched content from {url}")
+        return response.text
+    except requests.RequestException as e:
+        print(f"[DEBUG] Error fetching the website {url}: {e}")
+        return None
+
+def clean_html(html_content):
+    print("[DEBUG] Cleaning HTML content")
+    soup = BeautifulSoup(html_content, 'html.parser')
+    
+    # Remove script and style elements
+    for script in soup(["script", "style"]):
+        script.decompose()
+    
+    # Get text
+    text = soup.get_text()
+    
+    # Break into lines and remove leading and trailing space on each
+    lines = (line.strip() for line in text.splitlines())
+    # Break multi-headlines into a line each
+    chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
+    # Drop blank lines and join with newline characters
+    text = '\n'.join(chunk for chunk in chunks if chunk)
+    
+    print("[DEBUG] HTML content cleaned")
+    return text
+
+def hash_content(content):
+    return hashlib.md5(content.encode()).hexdigest()
+
+def get_state_filename(url):
+    return f"state_{hash_content(url)}.json"
+
+def load_previous_content(url):
+    filename = get_state_filename(url)
+    try:
+        with open(filename, 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {"content": "", "last_processed": None}
+
+def save_current_content(url, content):
+    filename = get_state_filename(url)
+    state = {
+        "content": content,
+        "last_processed": time.time()
+    }
+    with open(filename, 'w', newline='\n') as f:
+        json.dump(state, f, indent=2)
+
+def get_content_diff(previous_content, current_content):
+    if not previous_content:
+        return current_content
+    
+    previous_lines = previous_content.split('\n')
+    current_lines = current_content.split('\n')
+    
+    diff = []
+    for line in current_lines:
+        if line not in previous_lines:
+            diff.append(line)
+    
+    return '\n'.join(diff)
