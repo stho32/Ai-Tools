@@ -1,12 +1,56 @@
 import pyautogui
 import time
-from PIL import Image
+from PIL import Image, ImageGrab, ImageTk
 import imagehash
 import pytesseract
 import os
-import argparse
+import tkinter as tk
 
 pyautogui.PAUSE = 0.1  # Add a small pause after each PyAutoGUI function call
+
+class RegionSelector:
+    def __init__(self, master):
+        self.master = master
+        self.start_x = None
+        self.start_y = None
+        self.current_x = None
+        self.current_y = None
+
+        # Take a screenshot
+        self.screenshot = ImageGrab.grab()
+        self.tk_image = ImageTk.PhotoImage(self.screenshot)
+
+        self.master.attributes('-fullscreen', True)
+        self.master.attributes('-topmost', True)
+
+        self.canvas = tk.Canvas(master, cursor="cross", width=self.screenshot.width, height=self.screenshot.height)
+        self.canvas.pack(fill=tk.BOTH, expand=True)
+
+        # Display the screenshot on the canvas
+        self.canvas.create_image(0, 0, anchor='nw', image=self.tk_image)
+
+        self.canvas.bind("<ButtonPress-1>", self.on_button_press)
+        self.canvas.bind("<B1-Motion>", self.on_move_press)
+        self.canvas.bind("<ButtonRelease-1>", self.on_button_release)
+
+        self.rect = None
+        self.start_x = self.start_y = self.end_x = self.end_y = 0
+
+    def on_button_press(self, event):
+        self.start_x = self.canvas.canvasx(event.x)
+        self.start_y = self.canvas.canvasy(event.y)
+
+        if self.rect:
+            self.canvas.delete(self.rect)
+        self.rect = self.canvas.create_rectangle(self.start_x, self.start_y, self.start_x, self.start_y, outline='red')
+
+    def on_move_press(self, event):
+        self.current_x, self.current_y = (event.x, event.y)
+        self.canvas.coords(self.rect, self.start_x, self.start_y, self.current_x, self.current_y)
+
+    def on_button_release(self, event):
+        self.end_x, self.end_y = (event.x, event.y)
+        self.master.quit()
 
 def are_last_4_images_same(image_hashes):
     if len(image_hashes) < 4:
@@ -34,7 +78,19 @@ def combine_text_files(text_files):
     for text_file in text_files:
         os.remove(text_file)
 
-def main(left, top, width, height):
+def main():
+    root = tk.Tk()
+    app = RegionSelector(root)
+    root.mainloop()
+
+    # After region selection, destroy the window to free the screen
+    root.destroy()
+
+    left = int(min(app.start_x, app.end_x))
+    top = int(min(app.start_y, app.end_y))
+    width = int(abs(app.end_x - app.start_x))
+    height = int(abs(app.end_y - app.start_y))
+
     region = (left, top, width, height)
     
     print("Starting in 5 seconds...")
@@ -50,9 +106,6 @@ def main(left, top, width, height):
 
     while True:
         try:
-            pyautogui.press('space')
-            time.sleep(0.2)
-            
             screenshot = pyautogui.screenshot(region=region)
             
             image_filename = f"screenshot_{counter}.png"
@@ -78,6 +131,9 @@ def main(left, top, width, height):
             
             counter += 1
 
+            pyautogui.press('space')
+            time.sleep(0.2)
+
         except pyautogui.FailSafeException:
             print("PyAutoGUI fail-safe triggered. Stopping.")
             break
@@ -101,12 +157,4 @@ if __name__ == "__main__":
     # Update this path to where Tesseract is actually installed on your system
     pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
     
-    parser = argparse.ArgumentParser(description="Capture screenshots, perform OCR, and save as HTML.")
-    parser.add_argument("left", type=int, help="Left coordinate of the capture region")
-    parser.add_argument("top", type=int, help="Top coordinate of the capture region")
-    parser.add_argument("width", type=int, help="Width of the capture region")
-    parser.add_argument("height", type=int, help="Height of the capture region")
-    
-    args = parser.parse_args()
-    
-    main(args.left, args.top, args.width, args.height)
+    main()
