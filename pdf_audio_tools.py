@@ -30,12 +30,18 @@ def extract_text_from_pdf(pdf_path, start_page, num_pages):
             total_pages = len(pdf_reader.pages)
             end_page = min(start_page + num_pages, total_pages)
             for page_num in range(start_page, end_page):
-                text += pdf_reader.pages[page_num].extract_text() + "\n\n"
+                page_text = pdf_reader.pages[page_num].extract_text()
+                text += page_text + "\n\n"
+                
+                # Save each page's text to a separate file for debugging
+                debug_filename = f"page_{page_num + 1}_debug.txt"
+                with open(debug_filename, 'w', encoding='utf-8') as debug_file:
+                    debug_file.write(page_text)
+                print(f"[DEBUG] Saved text from page {page_num + 1} to {debug_filename}")
     except Exception as e:
         print(f"[ERROR] An error occurred while reading the PDF: {str(e)}")
         sys.exit(1)
     return text
-
 def call_gpt(system_message, user_message, model="gpt-4o"):
     print(f"[DEBUG] Calling GPT model: {model}")
     try:
