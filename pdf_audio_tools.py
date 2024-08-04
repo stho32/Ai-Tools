@@ -7,6 +7,7 @@ from PyPDF2 import PdfReader
 from bs4 import BeautifulSoup
 from openai import OpenAI
 from pydub import AudioSegment
+from pydub.playback import play
 import io
 import sys
 import time
@@ -35,7 +36,7 @@ def extract_text_from_pdf(pdf_path, start_page, num_pages):
         sys.exit(1)
     return text
 
-def call_gpt(system_message, user_message, model="gpt-4"):
+def call_gpt(system_message, user_message, model="gpt-4o"):
     print(f"[DEBUG] Calling GPT model: {model}")
     try:
         response = client.chat.completions.create(
@@ -53,7 +54,20 @@ def call_gpt(system_message, user_message, model="gpt-4"):
 def text_to_speech(text):
     print("[DEBUG] Converting text to speech")
     MAX_CHARS = 4000  # OpenAI's TTS API limit
-    chunks = [text[i:i+MAX_CHARS] for i in range(0, len(text), MAX_CHARS)]
+    words = text.split()
+    chunks = []
+    current_chunk = ""
+
+    for word in words:
+        if len(current_chunk) + len(word) + 1 <= MAX_CHARS:
+            current_chunk += " " + word if current_chunk else word
+        else:
+            chunks.append(current_chunk)
+            current_chunk = word
+
+    if current_chunk:
+        chunks.append(current_chunk)
+
     audio_contents = []
 
     for i, chunk in enumerate(chunks):
@@ -72,21 +86,28 @@ def text_to_speech(text):
     return audio_contents
 
 def play_audio(audio_contents, output_filename="output.mp3"):
-    print("[DEBUG] Saving audio")
+    print("[DEBUG] Processing audio")
     if audio_contents:
         try:
             combined_audio = AudioSegment.empty()
             for content in audio_contents:
                 audio = AudioSegment.from_mp3(io.BytesIO(content))
                 combined_audio += audio
+            
+            # Save the audio file
             combined_audio.export(output_filename, format="mp3")
             print(f"[DEBUG] Audio saved as {output_filename}")
+            
+            # Play the audio
+            print("[DEBUG] Playing audio")
+            play(combined_audio)
+            
             return output_filename
         except Exception as e:
-            print(f"[DEBUG] Error saving audio: {e}")
+            print(f"[DEBUG] Error processing or playing audio: {e}")
             return None
     else:
-        print("[DEBUG] No audio content to save")
+        print("[DEBUG] No audio content to process")
         return None
 
 def get_website_content(url):
