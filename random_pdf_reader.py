@@ -13,7 +13,7 @@ from pdf_audio_tools import (
 def prepare_content_with_gpt4(text):
     print("[DEBUG] Preparing content with GPT-4")
     system_message = "Du bist ein erfahrener Lehrer/Trainer. Deine Aufgabe ist es, den gegebenen Text zu korrigieren, zu erklären und zusammenzufassen. Bitte sprich Deutsch."
-    user_message = f"Bitte korrigiere Rechtschreibfehler im folgenden Text, erkläre dann den Inhalt, indem du einen kurzen Überblick gibst, dann durch diesen Überblick gehst und Details zu jedem Punkt hinzufügst. Fasse am Ende zusammen, worum es geht. Hier ist der Text:\n\n{text}"
+    user_message = f"Bitte erkläre den Inhalt, indem du ein kurzes Inhaltsverzeichnis erstellst, dann gehst du durch dieses Verzeichnis und erklärst die Details zu jedem Punkt. Fasse am Ende nochmal zusammen, worum es ging. Hier ist der Text:\n\n{text}"
     return call_gpt(system_message, user_message)
 
 def random_pdf_reader(directory, num_pages=5):
