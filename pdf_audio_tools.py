@@ -71,21 +71,23 @@ def text_to_speech(text):
     
     return audio_contents
 
-def play_audio(audio_contents):
-    print("[DEBUG] Playing audio")
+def play_audio(audio_contents, output_filename="output.mp3"):
+    print("[DEBUG] Saving audio")
     if audio_contents:
         try:
             combined_audio = AudioSegment.empty()
             for content in audio_contents:
                 audio = AudioSegment.from_mp3(io.BytesIO(content))
                 combined_audio += audio
-            combined_audio.export("output.mp3", format="mp3")
-            print("[DEBUG] Audio saved as output.mp3")
-            # You can add code here to play the audio if desired
+            combined_audio.export(output_filename, format="mp3")
+            print(f"[DEBUG] Audio saved as {output_filename}")
+            return output_filename
         except Exception as e:
             print(f"[DEBUG] Error saving audio: {e}")
+            return None
     else:
-        print("[DEBUG] No audio content to play")
+        print("[DEBUG] No audio content to save")
+        return None
 
 def get_website_content(url):
     print(f"[DEBUG] Attempting to fetch content from {url}")

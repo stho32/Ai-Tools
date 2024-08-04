@@ -1,4 +1,6 @@
 import time
+import sys
+import os
 from pdf_audio_tools import (
     get_website_content,
     clean_html,
@@ -53,8 +55,14 @@ def process_source(source):
                 print("\n[DEBUG] Starting text-to-speech conversion")
                 audio_contents = text_to_speech(analysis)
                 if audio_contents:
-                    print("[DEBUG] Text-to-speech conversion successful, playing audio")
-                    play_audio(audio_contents)
+                    print("[DEBUG] Text-to-speech conversion successful, saving audio")
+                    output_filename = f"ai_news_{int(time.time())}.mp3"
+                    audio_path = play_audio(audio_contents, output_filename)
+                    if audio_path:
+                        print(f"[INFO] Audio saved as: {audio_path}")
+                        # You can add code here to play the audio file if desired
+                    else:
+                        print("[ERROR] Failed to save audio")
                 else:
                     print("[DEBUG] Failed to convert text to speech")
             else:
