@@ -7,13 +7,13 @@ def log(message):
     print(f"[{timestamp}] {message}")
 
 def run_subprocess(command):
-    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
     while True:
         output = process.stdout.readline()
         if output == '' and process.poll() is not None:
             break
         if output:
-            print(output.strip())
+            print(output.strip(), flush=True)
     return process.poll()
 
 log("Starting daily-run.py")
