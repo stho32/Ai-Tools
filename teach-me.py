@@ -18,14 +18,6 @@ def run_subprocess(command):
 
 log("Starting daily-run.py")
 
-# Run ai-news.py once
-log("Attempting to run ai-news.py...")
-try:
-    return_code = run_subprocess(["python", "ai-news.py"])
-    log(f"ai-news.py completed with return code: {return_code}")
-except Exception as e:
-    log(f"Error running ai-news.py: {e}")
-
 # Loop random_pdf_reader with ./pdfs 20 as parameters
 log("Starting random_pdf_reader loop...")
 loop_count = 0
