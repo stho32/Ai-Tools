@@ -1,6 +1,7 @@
 import os
 import sys
 import random
+import time
 from pdf_audio_tools import call_gpt, text_to_speech, play_audio
 
 def prepare_content_with_gpt4(text):
@@ -52,11 +53,25 @@ def random_text_reader(text_dir, num_pages=3):
     play_audio(audio_file)
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2 or len(sys.argv) > 3:
-        print("Usage: python random_text_reader.py <text_directory> [num_pages]")
+    if len(sys.argv) < 2 or len(sys.argv) > 4:
+        print("Usage: python random_text_reader.py <text_directory> [num_pages] [--loop]")
         sys.exit(1)
 
     text_dir = sys.argv[1]
-    num_pages = int(sys.argv[2]) if len(sys.argv) == 3 else 3
+    num_pages = 3
+    loop = False
 
-    random_text_reader(text_dir, num_pages)
+    if len(sys.argv) >= 3:
+        if sys.argv[2] == '--loop':
+            loop = True
+        else:
+            num_pages = int(sys.argv[2])
+            if len(sys.argv) == 4 and sys.argv[3] == '--loop':
+                loop = True
+
+    while True:
+        random_text_reader(text_dir, num_pages)
+        if not loop:
+            break
+        print("\nWaiting for 5 seconds before the next iteration...")
+        time.sleep(5)
