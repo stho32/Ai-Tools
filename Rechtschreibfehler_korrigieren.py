@@ -32,15 +32,13 @@ def process_file(input_file):
         print(f"Processing page {i} of {total_pages}")
 
         # Call GPT to correct the page
-        system_message = "You are a helpful assistant that corrects OCR errors in text."
-        user_message = (
-            "Diese Seite kommt aus einem OCR. Bitte korrigiere alle Erkennungsfehler im Text, "
-            "so dass der Inhalt ordentlich und sauber ist. Bitte gib mir nur die korrigierte "
-            "Fassung (kein Blabla). Bitte gib mir das Ergebnis auch nicht in einem Codeblock, "
-            "sondern einfach plain. Du kannst gerne die Linefeeds korrigieren, so dass es sich "
-            "um einen Fließtext handelt.\n\n" + page.strip()
+        system_message = (
+            "Correct OCR recognition errors in the following text. Provide only the cleaned version without additional comments."
         )
-        corrected_page = call_gpt(system_message, user_message, model="gpt-3.5-turbo")
+        user_message = (
+            page.strip()
+        )
+        corrected_page = call_gpt(system_message, user_message, model="gpt-4o-mini")
 
         # Print the corrected page to the console
         print("\nCorrected page:")
