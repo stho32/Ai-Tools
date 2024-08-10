@@ -5,6 +5,9 @@ import imagehash
 import pytesseract
 import os
 import tkinter as tk
+import base64
+import requests
+from openai import OpenAI
 
 pyautogui.PAUSE = 0.1  # Add a small pause after each PyAutoGUI function call
 
@@ -62,6 +65,32 @@ def perform_ocr_to_text(image_path):
     text = pytesseract.image_to_string(image)
     return text
 
+def perform_ocr_with_openai(image_path):
+    client = OpenAI()  # Make sure you've set the OPENAI_API_KEY environment variable
+
+    # Read the image file and encode it as base64
+    with open(image_path, "rb") as image_file:
+        encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": "Please transcribe the text in this image accurately."},
+                        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{encoded_image}"}}
+                    ],
+                }
+            ],
+            max_tokens=4096,
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        print(f"Error in OpenAI API call: {e}")
+        return ""
+
 def combine_text_files(text_files):
     combined_text = ""
     for i, text_file in enumerate(text_files):
@@ -117,7 +146,7 @@ def main():
             
             print(f"Saved {image_filename}")
 
-            ocr_text = perform_ocr_to_text(image_filename)
+            ocr_text = perform_ocr_with_openai(image_filename)
             text_filename = f"text_{counter}.txt"
             with open(text_filename, 'w', encoding='utf-8') as text_file:
                 text_file.write(ocr_text)
