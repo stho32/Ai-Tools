@@ -11,10 +11,18 @@ from pdf_audio_tools import (
     play_audio
 )
 
-def prepare_content_with_gpt4(text):
+def prepare_content_with_gpt4(text, pdf_path):
     print("[DEBUG] Preparing content with GPT-4")
-    system_message = "Du bist ein erfahrener Lehrer/Trainer. Deine Aufgabe ist es, den gegebenen Text zu korrigieren, zu erklären und zusammenzufassen. Bitte sprich Deutsch."
-    user_message = f"Bitte erkläre den Inhalt, indem du ein kurzes Inhaltsverzeichnis erstellst, dann gehst du durch dieses Verzeichnis und erklärst die Details zu jedem Punkt. Fasse am Ende nochmal zusammen, worum es ging. Hier ist der Text:\n\n{text}"
+    system_message = """Du bist ein erfahrener Lehrer/Trainer. Deine Aufgabe ist es, den gegebenen Text zu korrigieren, zu erklären und zusammenzufassen. Bitte sprich Deutsch und sei präzise in deinen Erklärungen.
+
+Bearbeite den Text nach diesem Schema:
+1. Nenne zuerst die Quelle des Textes.
+2. Erstelle ein kurzes Inhaltsverzeichnis der Hauptpunkte.
+3. Gehe durch jeden Punkt des Inhaltsverzeichnisses und leite jeden inhaltlichen Abschnitt mit einer relevanten Frage ein. Beantworte dann diese Frage ausführlich mit den Details aus dem Text.
+4. Fasse am Ende die Kernaussagen des Textes zusammen, indem du fragst: "Was sind die wichtigsten Erkenntnisse aus diesem Text?"
+5. Stelle eine abschließende Frage wie: "Wie können wir dieses Wissen in der Praxis anwenden?" oder "Welche Verbindungen gibt es zu verwandten Themen?" und beantworte sie basierend auf dem Inhalt des Textes."""
+
+    user_message = f"Hier ist der Text aus der Quelle '{pdf_path}':\n\n{text}"
     return call_gpt(system_message, user_message)
 
 def random_pdf_reader(directory, num_pages=5, loop=False):
@@ -37,7 +45,7 @@ def random_pdf_reader(directory, num_pages=5, loop=False):
             text = extract_text_from_pdf(pdf_path, start_page, num_pages)
 
             # Prepare content with GPT-4
-            prepared_content = prepare_content_with_gpt4(text)
+            prepared_content = prepare_content_with_gpt4(text, pdf_path)
             if prepared_content:
                 print("[INFO] Content prepared successfully")
                 
