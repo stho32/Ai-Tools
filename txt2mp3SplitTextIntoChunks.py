@@ -17,31 +17,27 @@ def split_file(input_file, output_dir, max_chars=4000, num_chunks=None, debug=Fa
             print(f"\nAktueller Satz: {sentence}")
             input("Drücken Sie Enter, um fortzufahren...")
 
-        if not current_chunk and len(sentence) > max_chars:
-            # Wortweises Splitten für sehr lange Sätze
-            words = sentence.split()
+        if len(current_chunk) + len(sentence) + 1 > max_chars:
+            chunks.append(current_chunk.strip())
+            current_chunk = sentence + " "
+        else:
+            current_chunk += sentence + " "
+
+        # Handle very long sentences by splitting them into smaller chunks
+        if len(current_chunk) > max_chars:
+            words = current_chunk.split()
+            current_chunk = ""
             for word in words:
                 if len(current_chunk) + len(word) + 1 <= max_chars:
                     current_chunk += word + " "
                 else:
                     chunks.append(current_chunk.strip())
                     current_chunk = word + " "
-            continue
-
-        if len(current_chunk) + len(sentence) + 1 <= max_chars:
-            current_chunk += sentence + " "
-        else:
-            chunks.append(current_chunk.strip())
-            current_chunk = sentence + " "
-
-        if debug:
-            print(f"Aktueller Chunk: {current_chunk}")
-            print(f"Anzahl der Chunks: {len(chunks)}")
 
     if current_chunk:
         chunks.append(current_chunk.strip())
 
-    # Wenn num_chunks angegeben ist, passe die Chunks entsprechend an
+    # If num_chunks is specified, adjust the chunks accordingly
     if num_chunks and num_chunks < len(chunks):
         new_chunks = []
         chunk_size = len(chunks) // num_chunks
