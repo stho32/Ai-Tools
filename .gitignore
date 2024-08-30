@@ -3,3 +3,4 @@
 /ebooksAsText/
 __pycache__/
 *.mp3
+/temp_split/

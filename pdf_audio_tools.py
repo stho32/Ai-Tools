@@ -59,7 +59,7 @@ def call_gpt(system_message, user_message, model="gpt-4o"):
 
 def text_to_speech(text):
     print("[DEBUG] Converting text to speech")
-    MAX_CHARS = 4000  # OpenAI's TTS API limit
+    MAX_CHARS = 4096  # OpenAI's TTS API limit
     words = text.split()
     chunks = []
     current_chunk = ""
@@ -90,6 +90,23 @@ def text_to_speech(text):
             print(f"[DEBUG] Error during text-to-speech conversion for chunk {i+1}: {e}")
     
     return audio_contents
+
+
+def chunk_to_speech(text):
+    print("[DEBUG] Converting text to speech")
+    try:
+        response = client.audio.speech.create(
+            model="tts-1",
+            voice="alloy",
+            input=text
+        )
+        return response.content
+    
+    except Exception as e:
+        print(f"[DEBUG] Error during text-to-speech conversion for chunk {e}")
+    
+    return None
+
 
 def play_audio(audio_contents, output_filename="output.mp3"):
     print("[DEBUG] Processing audio")
