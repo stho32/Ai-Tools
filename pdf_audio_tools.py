@@ -95,15 +95,18 @@ def text_to_speech(text):
 def chunk_to_speech(text):
     print("[DEBUG] Converting text to speech")
     try:
+        voices = ["alloy", "echo", "fable", "onyx", "nova", "shimmer"]
+        random_voice = random.choice(voices)
+        print(f"[DEBUG] Selected voice: {random_voice}")
         response = client.audio.speech.create(
             model="tts-1",
-            voice="alloy",
+            voice=random_voice,
             input=text
         )
         return response.content
     
     except Exception as e:
-        print(f"[DEBUG] Error during text-to-speech conversion for chunk {e}")
+        print(f"[DEBUG] Error during text-to-speech conversion: {e}")
     
     return None
 
