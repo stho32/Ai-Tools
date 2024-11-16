@@ -3,6 +3,7 @@ import json
 import requests
 from bs4 import BeautifulSoup
 import openai
+import anthropic
 import re
 from typing import Optional, List, Dict, Any, Tuple
 import random
@@ -12,7 +13,9 @@ import sys
 import time
 
 # Initialize the OpenAI client
-client = openai.Client(api_key=os.environ.get("OPENAI_API_KEY"))
+openai_client = openai.Client(api_key=os.environ.get("OPENAI_API_KEY"))
+# Initialize the Anthropic client
+anthropic_client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
 def get_random_pdf(directory):
     pdf_files = [f for f in os.listdir(directory) if f.lower().endswith('.pdf')]
@@ -43,18 +46,39 @@ def extract_text_from_pdf(pdf_path, start_page, num_pages):
     return text
 
 def call_gpt(system_message, user_message):
-    print("[DEBUG] Calling GPT-4 API")
+    config = load_config()
+    model_config = config.get('model_config', {'provider': 'openai', 'model': 'gpt-4'})
+    provider = model_config.get('provider', 'openai')
+    model = model_config.get('model', 'gpt-4')
+
+    print(f"[DEBUG] Calling {provider} API with model {model}")
     try:
-        response = client.chat.completions.create(
-            model="gpt-4",
-            messages=[
-                {"role": "system", "content": system_message},
-                {"role": "user", "content": user_message}
-            ]
-        )
-        return response.choices[0].message.content
+        if provider == 'openai':
+            response = openai_client.chat.completions.create(
+                model=model,
+                messages=[
+                    {"role": "system", "content": system_message},
+                    {"role": "user", "content": user_message}
+                ]
+            )
+            return response.choices[0].message.content
+        elif provider == 'anthropic':
+            response = anthropic_client.messages.create(
+                model=model,
+                max_tokens=4096,
+                system=system_message,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": user_message
+                    }
+                ]
+            )
+            return response.content[0].text
+        else:
+            raise ValueError(f"Unsupported provider: {provider}")
     except Exception as e:
-        print(f"[ERROR] Error calling GPT-4 API: {str(e)}")
+        print(f"[ERROR] Error calling {provider} API: {str(e)}")
         return None
 
 def text_to_speech(text):
@@ -79,7 +103,7 @@ def text_to_speech(text):
     for i, chunk in enumerate(chunks):
         try:
             print(f"[DEBUG] Converting chunk {i+1} of {len(chunks)}")
-            response = client.audio.speech.create(
+            response = openai_client.audio.speech.create(
                 model="tts-1",
                 voice="alloy",
                 input=chunk
@@ -98,7 +122,7 @@ def chunk_to_speech(text):
         voices = ["alloy", "echo", "fable", "onyx", "nova", "shimmer"]
         random_voice = random.choice(voices)
         print(f"[DEBUG] Selected voice: {random_voice}")
-        response = client.audio.speech.create(
+        response = openai_client.audio.speech.create(
             model="tts-1",
             voice=random_voice,
             input=text
@@ -213,18 +237,32 @@ def save_current_content(url, content):
         json.dump(state, f, indent=2)
 
 def get_content_diff(previous_content, current_content):
+    """
+    Identifies new content by comparing current with previous content.
+    Optimized for finding new/modified content only, ignoring deletions.
+    Uses sets for efficient comparison and handles similar content as new.
+    """
     if not previous_content:
         return current_content
     
-    previous_lines = previous_content.split('\n')
+    # Split into lines and create a set for efficient lookup
+    previous_lines = set(previous_content.split('\n'))
     current_lines = current_content.split('\n')
     
-    diff = []
-    for line in current_lines:
-        if line not in previous_lines:
-            diff.append(line)
+    # Keep track of new content while maintaining order
+    new_content = []
     
-    return '\n'.join(diff)
+    # Process each current line
+    for line in current_lines:
+        line = line.strip()
+        # Skip empty lines
+        if not line:
+            continue
+        # If line is not in previous content, it's new
+        if line not in previous_lines:
+            new_content.append(line)
+    
+    return '\n'.join(new_content) if new_content else ""
 
 def load_config(config_path=None):
     """Load configuration from file."""
