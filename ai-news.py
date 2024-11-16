@@ -1,107 +1,62 @@
-import time
-import sys
 import os
+import time
+import json
 from datetime import datetime
 from Lib.pdf_audio_tools import (
     get_website_content,
     clean_html,
+    get_gpt4_analysis,
     load_previous_content,
     save_current_content,
     get_content_diff,
-    call_gpt
+    call_gpt,
+    load_config
 )
 
-# Configuration for URLs and keywords
-NEWS_SOURCES = [
-    # DotNet
-    #{"url": "https://devblogs.microsoft.com/dotnet/category/csharp/", "keywords": ["C#", ".NET", "ASP.NET", "Performance", "Features"], "category": "DotNet"},
-    #{"url": "https://www.hanselman.com/blog/", "keywords": ["C#", ".NET", "ASP.NET", "Development", "Microsoft"], "category": "DotNet"},
-    #{"url": "https://devblogs.microsoft.com/visualstudio/", "keywords": ["Visual Studio", "Development", "Tools", "Features"], "category": "DotNet"},
-    #{"url": "https://devblogs.microsoft.com/aspnet/", "keywords": ["ASP.NET", "Web Development", "Performance", "Security"], "category": "DotNet"},
-    #{"url": "https://www.dotnetconf.net/", "keywords": [".NET Conf", "Conference", "Announcements", "Features"], "category": "DotNet"},
-
-    # HTML
-    #{"url": "https://developer.mozilla.org/blog/", "keywords": ["HTML", "Web Standards", "Browser", "Features"], "category": "HTML"},
-    #{"url": "https://www.w3.org/blog/", "keywords": ["Web Standards", "HTML", "Specifications", "Working Groups"], "category": "HTML"},
-    #{"url": "https://web.dev/blog", "keywords": ["Web Development", "Best Practices", "Performance", "Standards"], "category": "HTML"},
-    #{"url": "https://blog.whatwg.org/", "keywords": ["HTML Living Standard", "Web Standards", "Browser"], "category": "HTML"},
-    #{"url": "https://www.smashingmagazine.com/", "keywords": ["Web Development", "Design", "HTML", "Best Practices"], "category": "HTML"},
-
-    # JavaScript
-    #{"url": "https://javascriptweekly.com/", "keywords": ["JavaScript", "ECMAScript", "Node.js", "Frameworks"], "category": "JavaScript"},
-    #{"url": "https://v8.dev/blog", "keywords": ["V8 Engine", "Performance", "JavaScript", "Features"], "category": "JavaScript"},
-    #{"url": "https://2ality.com/", "keywords": ["JavaScript", "ECMAScript", "Features", "Development"], "category": "JavaScript"},
-    #{"url": "https://tc39.es/", "keywords": ["ECMAScript", "JavaScript", "Standards", "Proposals"], "category": "JavaScript"},
-    #{"url": "https://javascript.info/", "keywords": ["JavaScript", "Tutorials", "Best Practices", "Features"], "category": "JavaScript"},
-    #{"url": "https://nodejs.org/en/blog/", "keywords": ["Node.js", "JavaScript", "Runtime", "Updates"], "category": "JavaScript"},
-    #{"url": "https://stateofjs.com/", "keywords": ["JavaScript", "Frameworks", "Tools", "Trends"], "category": "JavaScript"},
-
-    # CSS
-    #{"url": "https://css-tricks.com/", "keywords": ["CSS", "Web Design", "Layouts", "Features"], "category": "CSS"},
-    #{"url": "https://www.w3.org/blog/CSS/", "keywords": ["CSS", "Standards", "Specifications", "Features"], "category": "CSS"},
-    #{"url": "https://developer.chrome.com/blog/", "keywords": ["Chrome", "Web Platform", "CSS", "Features"], "category": "CSS"},
-    #{"url": "https://www.joshwcomeau.com/", "keywords": ["CSS", "Web Design", "Animations", "Tutorials"], "category": "CSS"},
-    #{"url": "https://css-weekly.com/", "keywords": ["CSS", "Web Design", "News", "Techniques"], "category": "CSS"},
-
-    # Microsoft SQL Server
-    #{"url": "https://www.microsoft.com/en-us/sql-server/blog/", "keywords": ["SQL Server", "Database", "Performance", "Features"], "category": "SQL"},
-    #{"url": "https://techcommunity.microsoft.com/t5/sql-server-blog/bg-p/SQLServer", "keywords": ["SQL Server", "Updates", "Best Practices", "Features"], "category": "SQL"},
-    #{"url": "https://learn.microsoft.com/en-us/sql/sql-server/", "keywords": ["SQL Server", "Documentation", "Updates", "Features"], "category": "SQL"},
-    #{"url": "https://www.brentozar.com/blog/", "keywords": ["SQL Server", "Performance", "Tuning", "Best Practices"], "category": "SQL"},
-    #{"url": "https://www.sqlservercentral.com/", "keywords": ["SQL Server", "Tips", "Tutorials", "Community"], "category": "SQL"},
-
-    # PowerShell
-    #{"url": "https://devblogs.microsoft.com/powershell/", "keywords": ["PowerShell", "Scripting", "Automation", "Features"], "category": "PowerShell"},
-    #{"url": "https://devblogs.microsoft.com/powershell-community/", "keywords": ["PowerShell", "Community", "Scripts", "Tips"], "category": "PowerShell"},
-    #{"url": "https://jdhitsolutions.com/blog/", "keywords": ["PowerShell", "Scripting", "Tips", "Tutorials"], "category": "PowerShell"},
-    #{"url": "https://donjones.com/", "keywords": ["PowerShell", "Automation", "Best Practices", "Training"], "category": "PowerShell"},
-    #{"url": "https://powershellexplained.com/", "keywords": ["PowerShell", "Tutorials", "Examples", "Tips"], "category": "PowerShell"},
-
-    # Blazor
-    #{"url": "https://devblogs.microsoft.com/dotnet/category/blazor/", "keywords": ["Blazor", "Web Development", "WebAssembly", "Features"], "category": "Blazor"},
-    #{"url": "https://blog.stevensanderson.com/", "keywords": ["Blazor", "WebAssembly", "Development", "Tips"], "category": "Blazor"},
-    #{"url": "https://blazor-university.com/", "keywords": ["Blazor", "Tutorials", "Components", "Best Practices"], "category": "Blazor"},
-    #{"url": "https://chrissainty.com/", "keywords": ["Blazor", "Development", "Components", "Tips"], "category": "Blazor"},
-    #{"url": "https://blazortrain.com/", "keywords": ["Blazor", "Training", "Tutorials", "Development"], "category": "Blazor"},
-
-    # AI
-    {"url": "https://openai.com/news/", "keywords": ["AI", "GPT", "Machine Learning", "Research"], "category": "AI"},
-    {"url": "https://www.anthropic.com/news/", "keywords": ["AI", "Claude", "Machine Learning", "Safety"], "category": "AI"},
-    {"url": "https://blog.google/products/gemini/", "keywords": ["Gemini", "AI", "Machine Learning", "Google"], "category": "AI"},
-    {"url": "https://www.cursor.com/blog", "keywords": ["AI", "Development Tools", "Coding", "Features"], "category": "AI"},
-    {"url": "https://changelog.cursor.sh/", "keywords": ["Cursor", "AI", "Development", "Updates"], "category": "AI"},
-    {"url": "https://aider.chat/blog/", "keywords": ["AI", "Coding Assistant", "Development", "Features"], "category": "AI"},
-    {"url": "https://codesubmit.io/blog/ai-code-tools", "keywords": ["AI", "Code Tools", "Development", "Reviews"], "category": "AI"},
-    {"url": "https://www.heise.de/", "keywords": ["AI", "Technology", "News", "German"], "category": "AI"},
-    {"url": "https://techcrunch.com/category/artificial-intelligence/", "keywords": ["AI", "Startups", "Technology", "Industry"], "category": "AI"}
-]
-
-def get_gpt4_analysis(content, url, keywords, category):
-    print(f"[DEBUG] Starting GPT-4 analysis for {url} in category {category}")
-    keywords_str = ", ".join(keywords)
-    
-    system_messages = {
-        "DotNet": "You are an expert .NET developer who analyzes news and updates in the .NET ecosystem.",
-        "HTML": "You are a web standards expert who analyzes developments in HTML and web technologies.",
-        "JavaScript": "You are a JavaScript expert who analyzes developments in the JavaScript ecosystem.",
-        "CSS": "You are a CSS expert who analyzes developments in web styling and design.",
-        "SQL": "You are a SQL Server expert who analyzes developments in database technologies.",
-        "PowerShell": "You are a PowerShell expert who analyzes developments in automation and scripting.",
-        "Blazor": "You are a Blazor expert who analyzes developments in web development with WebAssembly.",
-        "AI": "You are an AI expert who analyzes developments in artificial intelligence and machine learning."
+def process_source(source):
+    url = source["url"]
+    keywords = source["keywords"]
+    category = source["category"]
+    result = {
+        "url": url,
+        "keywords": keywords,
+        "category": category,
+        "analysis": None,
+        "error": None
     }
     
-    system_message = system_messages.get(category, "You are an expert technology analyst.")
-    user_message = """Please analyze the following new content from {0} and provide a summary of the latest developments related to {1}, 
-    focusing on these keywords: {2}. Highlight the most important updates and their practical implications for developers.
-    Please respond in German. Here's the new content:\n\n{3}""".format(
-        url,
-        category,
-        keywords_str,
-        content
-    )
+    print(f"[DEBUG] Processing source: {url}")
     
-    return call_gpt(system_message, user_message)
+    try:
+        previous_state = load_previous_content(url)
+        previous_content = previous_state["content"]
+        
+        html_content, error = get_website_content(url)
+        if html_content:
+            print(f"[DEBUG] Content fetched for {url}, cleaning HTML")
+            cleaned_content = clean_html(html_content)
+            
+            new_content = get_content_diff(previous_content, cleaned_content)
+            
+            if new_content.strip():  # Check if there's any non-whitespace content
+                print(f"[DEBUG] New content found, starting analysis")
+                analysis = get_gpt4_analysis(new_content, url, keywords, category)
+                if analysis:
+                    print(f"[DEBUG] Analysis completed for {url}")
+                    result["analysis"] = analysis
+                else:
+                    result["error"] = "Failed to generate analysis"
+            else:
+                result["error"] = "No new content found"
+            
+            save_current_content(url, cleaned_content)
+        else:
+            result["error"] = error or "Failed to fetch content"
+    except Exception as e:
+        result["error"] = str(e)
+        print(f"[ERROR] Error processing {url}: {str(e)}")
+    
+    return result
 
 def generate_html_report(results, timestamp):
     html_template = """
@@ -164,27 +119,8 @@ def generate_html_report(results, timestamp):
 </html>
 """
 
-    category_icons = {
-        "DotNet": "bi-code-square",
-        "HTML": "bi-file-earmark-code",
-        "JavaScript": "bi-filetype-js",
-        "CSS": "bi-palette",
-        "SQL": "bi-database",
-        "PowerShell": "bi-terminal",
-        "Blazor": "bi-lightning",
-        "AI": "bi-robot"
-    }
-
-    category_colors = {
-        "DotNet": "primary",
-        "HTML": "warning",
-        "JavaScript": "warning",
-        "CSS": "info",
-        "SQL": "success",
-        "PowerShell": "dark",
-        "Blazor": "danger",
-        "AI": "secondary"
-    }
+    config = load_config()
+    categories = config.get('categories', {})
 
     # Group results by category
     categorized_results = {}
@@ -197,13 +133,12 @@ def generate_html_report(results, timestamp):
     # Generate navigation
     nav_items = []
     for category in sorted(categorized_results.keys()):
+        category_config = categories.get(category, {})
+        icon = category_config.get('icon', 'bi-bookmark')
         nav_items.append(
             '<a class="flex-sm-fill text-sm-center nav-link" href="#{0}">'
             '<i class="bi {1}"></i> {0}'
-            '</a>'.format(
-                category,
-                category_icons.get(category, "bi-bookmark")
-            )
+            '</a>'.format(category, icon)
         )
     category_nav = "\n".join(nav_items)
 
@@ -212,6 +147,10 @@ def generate_html_report(results, timestamp):
     for category in sorted(categorized_results.keys()):
         items = categorized_results[category]
         category_content = []
+        category_config = categories.get(category, {})
+        icon = category_config.get('icon', 'bi-bookmark')
+        color = category_config.get('color', 'secondary')
+        
         section_template = """
             <section id="{0}" class="category-section">
                 <div class="category-header">
@@ -227,8 +166,8 @@ def generate_html_report(results, timestamp):
         """
         category_content.append(section_template.format(
             category,
-            category_icons.get(category, 'bi-bookmark'),
-            category_colors.get(category, 'secondary'),
+            icon,
+            color,
             len(items)
         ))
 
@@ -287,58 +226,36 @@ def generate_html_report(results, timestamp):
         content=content
     )
 
-def process_source(source):
-    url = source["url"]
-    keywords = source["keywords"]
-    category = source["category"]
-    result = {
-        "url": url,
-        "keywords": keywords,
-        "category": category,
-        "analysis": None,
-        "error": None
-    }
+def get_gpt4_analysis(content, url, keywords, category):
+    print(f"[DEBUG] Starting GPT-4 analysis for {url} in category {category}")
+    keywords_str = ", ".join(keywords)
     
-    print(f"[DEBUG] Processing source: {url}")
+    # Get system message from config
+    config = load_config()
+    categories = config.get('categories', {})
+    category_config = categories.get(category, {})
+    system_message = category_config.get('system_message', "You are an expert technology analyst.")
     
-    try:
-        previous_state = load_previous_content(url)
-        previous_content = previous_state["content"]
-        
-        html_content, error = get_website_content(url)
-        if html_content:
-            print(f"[DEBUG] Content fetched for {url}, cleaning HTML")
-            cleaned_content = clean_html(html_content)
-            
-            new_content = get_content_diff(previous_content, cleaned_content)
-            
-            if new_content.strip():  # Check if there's any non-whitespace content
-                print(f"[DEBUG] New content found, starting analysis")
-                analysis = get_gpt4_analysis(new_content, url, keywords, category)
-                if analysis:
-                    print(f"[DEBUG] Analysis completed for {url}")
-                    result["analysis"] = analysis
-                else:
-                    result["error"] = "Failed to generate analysis"
-            else:
-                result["error"] = "No new content found"
-            
-            save_current_content(url, cleaned_content)
-        else:
-            result["error"] = error or "Failed to fetch content"
-    except Exception as e:
-        result["error"] = str(e)
-        print(f"[ERROR] Error processing {url}: {str(e)}")
+    user_message = """Please analyze the following new content from {0} and provide a summary of the latest developments related to {1}, 
+    focusing on these keywords: {2}. Highlight the most important updates and their practical implications for developers.
+    Provide the summary in German.
     
-    return result
+    Content to analyze:
+    {3}
+    """.format(url, category, keywords_str, content)
+
+    return call_gpt(system_message, user_message)
 
 def main():
     print("[DEBUG] Starting main function")
     timestamp = time.time()
     results = []
     
-    for i, source in enumerate(NEWS_SOURCES, 1):
-        print(f"\n[DEBUG] Processing source {i} of {len(NEWS_SOURCES)}")
+    config = load_config()
+    news_sources = config.get('news_sources', [])
+    
+    for i, source in enumerate(news_sources, 1):
+        print(f"\n[DEBUG] Processing source {i} of {len(news_sources)}")
         result = process_source(source)
         results.append(result)
     
@@ -360,6 +277,4 @@ def main():
     print("[DEBUG] All sources processed")
 
 if __name__ == "__main__":
-    print("[DEBUG] Script started")
     main()
-    print("[DEBUG] Script completed")

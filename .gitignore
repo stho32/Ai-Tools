@@ -1,4 +1,4 @@
-*.json
+ai-news-config.json
 /pdfs/
 /ebooksAsText/
 __pycache__/

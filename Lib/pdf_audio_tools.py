@@ -1,19 +1,18 @@
 import os
-import random
 import json
-import hashlib
 import requests
-from PyPDF2 import PdfReader
 from bs4 import BeautifulSoup
-from openai import OpenAI
-from pydub import AudioSegment
-from pydub.playback import play
+import openai
+import re
+from typing import Optional, List, Dict, Any, Tuple
+import random
+import hashlib
 import io
 import sys
 import time
 
 # Initialize the OpenAI client
-client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+client = openai.Client(api_key=os.environ.get("OPENAI_API_KEY"))
 
 def get_random_pdf(directory):
     pdf_files = [f for f in os.listdir(directory) if f.lower().endswith('.pdf')]
@@ -26,7 +25,7 @@ def extract_text_from_pdf(pdf_path, start_page, num_pages):
     text = ""
     try:
         with open(pdf_path, 'rb') as file:
-            pdf_reader = PdfReader(file)
+            pdf_reader = openai.PdfReader(file)
             total_pages = len(pdf_reader.pages)
             end_page = min(start_page + num_pages, total_pages)
             for page_num in range(start_page, end_page):
@@ -43,19 +42,19 @@ def extract_text_from_pdf(pdf_path, start_page, num_pages):
         sys.exit(1)
     return text
 
-def call_gpt(system_message, user_message, model="gpt-4o"):
-    print(f"[DEBUG] Calling GPT model: {model}")
+def call_gpt(system_message, user_message):
+    print("[DEBUG] Calling GPT-4 API")
     try:
         response = client.chat.completions.create(
-            model=model,
+            model="gpt-4",
             messages=[
                 {"role": "system", "content": system_message},
                 {"role": "user", "content": user_message}
             ]
         )
-        return response.choices[0].message.content.strip()
+        return response.choices[0].message.content
     except Exception as e:
-        print(f"[DEBUG] Error during GPT call: {e}")
+        print(f"[ERROR] Error calling GPT-4 API: {str(e)}")
         return None
 
 def text_to_speech(text):
@@ -139,8 +138,20 @@ def play_audio(audio_contents, output_filename="output.mp3"):
 
 def get_website_content(url):
     print(f"[DEBUG] Attempting to fetch content from {url}")
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5',
+        'DNT': '1',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'none',
+        'Sec-Fetch-User': '?1'
+    }
     try:
-        response = requests.get(url)
+        response = requests.get(url, headers=headers, timeout=30)
         if response.status_code != 200:
             error_msg = f"HTTP {response.status_code}"
             print(f"[DEBUG] Error fetching the website {url}: {error_msg}")
@@ -214,3 +225,39 @@ def get_content_diff(previous_content, current_content):
             diff.append(line)
     
     return '\n'.join(diff)
+
+def load_config(config_path=None):
+    """Load configuration from file."""
+    if config_path is None:
+        # Try to load the main config file first, fall back to example if it doesn't exist
+        config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'ai-news-config.json')
+        if not os.path.exists(config_path):
+            config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'ai-news-config.example.json')
+    
+    try:
+        with open(config_path, 'r', encoding='utf-8') as f:
+            config = json.load(f)
+            return config
+    except Exception as e:
+        print(f"[ERROR] Failed to load configuration from {config_path}: {str(e)}")
+        return {"categories": {}, "news_sources": []}
+
+def get_gpt4_analysis(content, url, keywords, category):
+    print(f"[DEBUG] Starting GPT-4 analysis for {url} in category {category}")
+    keywords_str = ", ".join(keywords)
+    
+    # Get system message from config
+    config = load_config()
+    categories = config.get('categories', {})
+    category_config = categories.get(category, {})
+    system_message = category_config.get('system_message', "You are an expert technology analyst.")
+    
+    user_message = """Please analyze the following new content from {0} and provide a summary of the latest developments related to {1}, 
+    focusing on these keywords: {2}. Highlight the most important updates and their practical implications for developers.
+    Provide the summary in German.
+    
+    Content to analyze:
+    {3}
+    """.format(url, category, keywords_str, content)
+
+    return call_gpt(system_message, user_message)

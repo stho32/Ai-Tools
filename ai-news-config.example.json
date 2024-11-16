@@ -1,0 +1,31 @@
+{
+    "categories": {
+        "AI Companies": {
+            "icon": "bi-building",
+            "color": "primary",
+            "system_message": "You are an expert in AI companies who analyzes news and updates in the AI industry."
+        },
+        "Tech News": {
+            "icon": "bi-newspaper",
+            "color": "info",
+            "system_message": "You are a tech news expert who analyzes news and updates in the tech industry."
+        }
+    },
+    "news_sources": [
+        {
+            "url": "https://openai.com/blog",
+            "keywords": ["GPT", "AI", "Machine Learning", "OpenAI"],
+            "category": "AI Companies"
+        },
+        {
+            "url": "https://www.heise.de/thema/Künstliche-Intelligenz",
+            "keywords": ["KI", "Künstliche Intelligenz", "Machine Learning", "ChatGPT"],
+            "category": "Tech News"
+        },
+        {
+            "url": "https://techcrunch.com/category/artificial-intelligence/",
+            "keywords": ["AI", "Artificial Intelligence", "Machine Learning", "Neural Networks"],
+            "category": "Tech News"
+        }
+    ]
+}
