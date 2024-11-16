@@ -1,6 +1,6 @@
 import os
 import sys
-from pdf_audio_tools import call_gpt
+from Lib.pdf_audio_tools import call_gpt
 
 def process_file(input_file):
     # Check if the input file exists

@@ -1,7 +1,7 @@
 import time
 import sys
 import os
-from pdf_audio_tools import (
+from Lib.pdf_audio_tools import (
     get_website_content,
     clean_html,
     load_previous_content,

@@ -2,7 +2,7 @@ import os
 import sys
 import random
 import time
-from pdf_audio_tools import call_gpt, text_to_speech, play_audio
+from Lib.pdf_audio_tools import call_gpt, text_to_speech, play_audio
 
 def prepare_content_with_gpt4(text):
     system_message = "You are a helpful assistant that explains and summarizes text in German."

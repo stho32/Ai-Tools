@@ -3,7 +3,7 @@ import sys
 import random
 import argparse
 from PyPDF2 import PdfReader
-from pdf_audio_tools import (
+from Lib.pdf_audio_tools import (
     get_random_pdf,
     extract_text_from_pdf,
     call_gpt,

@@ -1,6 +1,6 @@
 import os
 import argparse
-import text_split
+from Lib import text_split
 import shutil
 
 def clear_output_directory(output_dir):
