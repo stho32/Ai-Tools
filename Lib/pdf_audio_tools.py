@@ -42,6 +42,7 @@ def extract_text_from_pdf(pdf_path, start_page, num_pages):
         print(f"[ERROR] An error occurred while reading the PDF: {str(e)}")
         sys.exit(1)
     return text
+
 def call_gpt(system_message, user_message, model="gpt-4o"):
     print(f"[DEBUG] Calling GPT model: {model}")
     try:
@@ -140,12 +141,16 @@ def get_website_content(url):
     print(f"[DEBUG] Attempting to fetch content from {url}")
     try:
         response = requests.get(url)
-        response.raise_for_status()
+        if response.status_code != 200:
+            error_msg = f"HTTP {response.status_code}"
+            print(f"[DEBUG] Error fetching the website {url}: {error_msg}")
+            return None, error_msg
         print(f"[DEBUG] Successfully fetched content from {url}")
-        return response.text
+        return response.text, None
     except requests.RequestException as e:
-        print(f"[DEBUG] Error fetching the website {url}: {e}")
-        return None
+        error_msg = str(e)
+        print(f"[DEBUG] Error fetching the website {url}: {error_msg}")
+        return None, error_msg
 
 def clean_html(html_content):
     print("[DEBUG] Cleaning HTML content")
@@ -171,8 +176,13 @@ def clean_html(html_content):
 def hash_content(content):
     return hashlib.md5(content.encode()).hexdigest()
 
+def get_state_directory():
+    status_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.ai-news-status')
+    os.makedirs(status_dir, exist_ok=True)
+    return status_dir
+
 def get_state_filename(url):
-    return f"state_{hash_content(url)}.json"
+    return os.path.join(get_state_directory(), f"state_{hash_content(url)}.json")
 
 def load_previous_content(url):
     filename = get_state_filename(url)

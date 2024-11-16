@@ -5,3 +5,5 @@ __pycache__/
 *.mp3
 /temp_split/
 .smart-env/
+.ai-news-status/
+tech_news*.html
