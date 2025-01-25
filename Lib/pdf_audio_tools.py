@@ -13,7 +13,9 @@ import sys
 import time
 
 # Initialize the OpenAI client
-openai_client = openai.Client(api_key=os.environ.get("OPENAI_API_KEY"))
+from openai import OpenAI
+openai_client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+
 # Initialize the Anthropic client
 anthropic_client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
@@ -265,20 +267,53 @@ def get_content_diff(previous_content, current_content):
     return '\n'.join(new_content) if new_content else ""
 
 def load_config(config_path=None):
-    """Load configuration from file."""
-    if config_path is None:
-        # Try to load the main config file first, fall back to example if it doesn't exist
-        config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'ai-news-config.json')
-        if not os.path.exists(config_path):
-            config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'ai-news-config.example.json')
+    """
+    Load configuration from file.
+    Args:
+        config_path: Path to the config file. If None, uses default ai-news-config.json
+    Returns:
+        dict: Configuration dictionary with default values if loading fails
+    """
+    base_dir = os.path.dirname(os.path.dirname(__file__))
     
+    if config_path is None:
+        config_path = os.path.join(base_dir, 'ai-news-config.json')
+    elif not os.path.isabs(config_path):
+        # Convert relative path to absolute
+        config_path = os.path.join(base_dir, config_path)
+    
+    # Try to load the specified config file
     try:
         with open(config_path, 'r', encoding='utf-8') as f:
             config = json.load(f)
+            # Ensure default values exist
+            if 'categories' not in config:
+                config['categories'] = {}
+            if 'news_sources' not in config:
+                config['news_sources'] = []
+            if 'output_prefix' not in config:
+                config['output_prefix'] = 'tech_news'
             return config
     except Exception as e:
         print(f"[ERROR] Failed to load configuration from {config_path}: {str(e)}")
-        return {"categories": {}, "news_sources": []}
+        print("[INFO] Using example config as fallback")
+        
+        # Try to load example config as fallback
+        example_path = os.path.join(base_dir, 'ai-news-config.example.json')
+        try:
+            with open(example_path, 'r', encoding='utf-8') as f:
+                config = json.load(f)
+                config['output_prefix'] = 'tech_news'  # Add default prefix
+                return config
+        except Exception as e2:
+            print(f"[ERROR] Failed to load example config: {str(e2)}")
+            
+        # Return empty config with defaults if all else fails
+        return {
+            "categories": {},
+            "news_sources": [],
+            "output_prefix": "tech_news"
+        }
 
 def get_gpt4_analysis(content, url, keywords, category):
     print(f"[DEBUG] Starting GPT-4 analysis for {url} in category {category}")

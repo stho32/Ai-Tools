@@ -1,6 +1,7 @@
 import os
 import time
 import json
+import argparse
 from datetime import datetime
 from Lib.pdf_audio_tools import (
     get_website_content,
@@ -247,12 +248,21 @@ def get_gpt4_analysis(content, url, keywords, category):
     return call_gpt(system_message, user_message)
 
 def main():
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(description='AI News Generator')
+    parser.add_argument('--config', '-c', 
+                      help='Path to config file (default: ai-news-config.json)',
+                      default='ai-news-config.json')
+    args = parser.parse_args()
+    
     print("[DEBUG] Starting main function")
     timestamp = time.time()
     results = []
     
-    config = load_config()
+    # Load config from specified file
+    config = load_config(args.config)
     news_sources = config.get('news_sources', [])
+    output_prefix = config.get('output_prefix', 'tech_news')
     
     for i, source in enumerate(news_sources, 1):
         print(f"\n[DEBUG] Processing source {i} of {len(news_sources)}")
@@ -263,8 +273,8 @@ def main():
     print("\n[DEBUG] Generating HTML report")
     html_content = generate_html_report(results, timestamp)
     
-    # Save HTML report
-    report_filename = os.path.abspath(f"tech_news_{int(timestamp)}.html")
+    # Save HTML report using configured prefix
+    report_filename = os.path.abspath(f"{output_prefix}_{int(timestamp)}.html")
     with open(report_filename, "w", encoding="utf-8") as f:
         f.write(html_content)
     

@@ -1,4 +1,5 @@
 {
+    "output_prefix": "mein-prefix",
     "categories": {
         "AI Companies": {
             "icon": "bi-building",

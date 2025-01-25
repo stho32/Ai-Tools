@@ -6,4 +6,6 @@ __pycache__/
 /temp_split/
 .smart-env/
 .ai-news-status/
+*.config.json
 tech_news*.html
+Lead-Developer-News*.html
