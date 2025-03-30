@@ -2,6 +2,8 @@
 
 - Das Skript möge das neue text-to-speech von OpenAI nutzen:
 https://platform.openai.com/docs/guides/text-to-speech
+- Die Umgebungsvariable, aus der du den OPENAI-Key bekommst heisst "OPENAI_API_KEY"
+
 
 ```python
 import asyncio
@@ -29,6 +31,12 @@ async def main() -> None:
 if __name__ == "__main__":
     asyncio.run(main())
 ```
+- nutze diese neue gerade beschriebene Schnittstelle
+- erstelle als Instructions 5 unterschiedliche Stimmen-Instructions
+- die Voice soll bitte auch zufällig gewählt werden in jedem Paragraphen
+- Die Stimmen-Instructions sollen zu unterschiedlichen Trainer-Typen gehören, die einem die Informationen wirklich vermitteln wollen.
+- Achtung: Bitte baue einen Fallback-Mechanismus ein. Er soll versuchen gpt-4o-mini-tts zu verwenden. Wenn das nicht klappt darf er auf ältere Modelle zurückfallen
+
 
 Ich möchte ein Skript haben, dass so ähnlich wie die ebook* Skripte funktioniert.
 
@@ -38,3 +46,12 @@ Ich möchte ein Skript haben, dass so ähnlich wie die ebook* Skripte funktionie
 - Dann wird die Gesamtdatei in Abschnitte aufgeteilt, die durch die API verarbeitet werden können (es sollte sich vielleicht um Paragraphen oder Sätze handeln, die immer zusammen verarbeitet werden)
 - Die Abschnitte werden in MP3s konvertiert
 - Am Ende werden alle MP3s zusammengefasst. Die zusammengefasste MP3-Datei heißt wie der Md-Ordner, den ich angegeben habe. Also z.B. wenn C:\Projekte\Blabla\Pineapple der Pfad war, dann ist der Dateiname Pineapple.mp3 .
+
+- Für die temporären Audio-Dateien die du erstellst und ggf. Text Chunks FALLS du sie in Dateien speicherst, nutze gerne das Ausgabeverzeichnis als temporären Speicherort
+
+- Stelle sicher, dass ich während des Vorgangs Fortschrittsmeldungen erhalte
+
+Zum Testen kannst du folgende Angaben verwenden:
+- Eingabeverzeichnis mit md-Dateien : C:\Projekte\Seminar-Prozess\Seminar-Prozess
+- Ausgabeverzeichnis : C:\Projekte\Seminar-Prozess-mp3
+
