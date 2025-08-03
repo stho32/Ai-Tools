@@ -1,0 +1,3 @@
+@echo off
+echo Running cleanup with uv...
+uv run python cleanup.py %*

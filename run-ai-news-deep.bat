@@ -1,0 +1,3 @@
+@echo off
+echo Starting AI News Deep with uv...
+uv run python ai-news-deep.py --config ai-news-config.json %*
