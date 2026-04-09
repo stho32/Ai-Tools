@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import subprocess
 import sys
 import datetime
@@ -16,30 +17,31 @@ def run_subprocess(command):
             print(output.strip(), flush=True)
     return process.poll()
 
-log("Starting daily-run.py")
+if __name__ == "__main__":
+    log("Starting daily-run.py")
 
-# Run ai-news.py once
-log("Attempting to run ai-news.py...")
-try:
-    return_code = run_subprocess(["python", "ai-news.py"])
-    log(f"ai-news.py completed with return code: {return_code}")
-except Exception as e:
-    log(f"Error running ai-news.py: {e}")
-
-# Loop random_pdf_reader with ./pdfs 20 as parameters
-log("Starting random_pdf_reader loop...")
-loop_count = 0
-while True:
+    # Run ai-news.py once
+    log("Attempting to run ai-news.py...")
     try:
-        loop_count += 1
-        log(f"Running random_pdf_reader (iteration {loop_count})...")
-        return_code = run_subprocess(["python", "random_pdf_reader.py", "./pdfs", "20"])
-        log(f"random_pdf_reader completed with return code: {return_code}")
-    except KeyboardInterrupt:
-        log("Script terminated by user.")
-        break
+        return_code = run_subprocess(["python", "ai-news.py"])
+        log(f"ai-news.py completed with return code: {return_code}")
     except Exception as e:
-        log(f"Error running random_pdf_reader: {e}")
-        log("Continuing to next iteration...")
+        log(f"Error running ai-news.py: {e}")
 
-log("daily-run.py completed")
+    # Loop random_pdf_reader with ./pdfs 20 as parameters
+    log("Starting random_pdf_reader loop...")
+    loop_count = 0
+    while True:
+        try:
+            loop_count += 1
+            log(f"Running random_pdf_reader (iteration {loop_count})...")
+            return_code = run_subprocess(["python", "random_pdf_reader.py", "./pdfs", "20"])
+            log(f"random_pdf_reader completed with return code: {return_code}")
+        except KeyboardInterrupt:
+            log("Script terminated by user.")
+            break
+        except Exception as e:
+            log(f"Error running random_pdf_reader: {e}")
+            log("Continuing to next iteration...")
+
+    log("daily-run.py completed")

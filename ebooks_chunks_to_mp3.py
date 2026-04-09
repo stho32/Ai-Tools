@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import os
 import argparse
 from Lib.pdf_audio_tools import chunk_to_speech
