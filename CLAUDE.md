@@ -14,14 +14,49 @@ Die Tools nutzen OpenAI und Anthropic APIs fuer KI-gestuetzte Analyse und Text-t
 
 ## Projektstruktur
 
+Die Tools sind nach Themenbereich in eigene Oberverzeichnisse aufgeteilt:
+
 ```
 Ai-Tools/
-  *.py              # Hauptskripte (ai-news, md_to_mp3, random_*, daily-run, cleanup)
-  Lib/              # Wiederverwendbare Module (pdf_audio_tools, text_split)
-  Ai-Documents/     # Projektdokumentation (coding-style, structure)
-  Anforderungen/    # Anforderungsdokumente
-  run-*.bat         # Windows-Startskripte
-  run-tools.bat     # Master-Launcher fuer alle Tools
+  news/                 # Daily News Scraper + HTML-Report
+    ai-news.py
+    ai-news-deep.py
+    ai-news-config.example.json
+    run-ai-news.bat
+    run-ai-news-deep.bat
+    lib/news_utils.py   # HTTP-Fetch, HTML-Clean, Diff, LLM-Call
+
+  audiobooks/           # Text -> MP3 Workflows
+    md_to_mp3.py
+    ebooks_text_to_chunks.py
+    ebooks_chunks_to_mp3.py
+    run-md-to-mp3.bat
+    run-md-to-mp3-pro.bat
+    run-ebooks-text-to-chunks.bat
+    run-ebooks-chunks-to-mp3.bat
+    lib/text_split.py
+    lib/audio_tools.py  # chunk_to_speech (OpenAI TTS)
+
+  readers/              # Random PDF/Text-Reader + TTS
+    random_pdf_reader.py
+    random_educator.py
+    random_text_reader.py
+    cleanup.py
+    run-random-pdf-reader.bat
+    run-random-educator.bat
+    run-random-text-reader.bat
+    run-cleanup.bat
+    lib/pdf_audio_tools.py  # PDF-Extract, call_gpt, text_to_speech, play_audio
+
+  daily-run.py          # Orchestrator: news + readers-Loop (bleibt im Root)
+  run-daily.bat
+  run-tools.bat         # Master-Launcher fuer alle Bereiche
+  run.bat               # Shortcut fuer news/ai-news.py
+  setup.bat
+
+  Ai-Documents/         # Projektdokumentation (coding-style, structure)
+  Anforderungen/        # Anforderungsdokumente
+  pyproject.toml
 ```
 
 ## Befehle
@@ -32,45 +67,56 @@ Ai-Tools/
 uv sync
 ```
 
-### Scripts ausfuehren
+### Scripts ausfuehren (direkt via uv)
 
 ```bash
 # Nachrichtenanalyse
-uv run python ai-news.py --config ai-news-config.json
-uv run python ai-news-deep.py --config ai-news-config.json
+cd news && uv run python ai-news.py --config ai-news-config.json
+cd news && uv run python ai-news-deep.py --config ai-news-config.json
 
 # Markdown zu MP3
-uv run python md_to_mp3.py <input-dir> <output-dir>
-
-# Zufallsbasierte Leser
-uv run python random_educator.py <pdf-dir> <text-dir> <num-pages>
-uv run python random_pdf_reader.py <directory> <num-pages>
-uv run python random_text_reader.py <text-dir> <num-pages>
+cd audiobooks && uv run python md_to_mp3.py <input-dir> <output-dir>
 
 # E-Book-Verarbeitung
-uv run python ebooks_text_to_chunks.py <input-file> <output-dir>
-uv run python ebooks_chunks_to_mp3.py <chunks-dir>
+cd audiobooks && uv run python ebooks_text_to_chunks.py <input-file> <output-dir>
+cd audiobooks && uv run python ebooks_chunks_to_mp3.py <chunks-dir>
 
-# Taeglich
-uv run python daily-run.py
+# Zufallsbasierte Leser
+cd readers && uv run python random_educator.py <pdf-dir> <text-dir> <num-pages>
+cd readers && uv run python random_pdf_reader.py <directory> <num-pages>
+cd readers && uv run python random_text_reader.py <text-dir> <num-pages>
 
 # Bereinigung
-uv run python cleanup.py
+cd readers && uv run python cleanup.py
+
+# Taeglich (News + PDF-Loop)
+uv run python daily-run.py
 ```
 
 ### Windows Batch-Dateien
 
 ```cmd
-run-tools.bat              # Master-Launcher mit Auswahl
-run-ai-news.bat            # AI News
-run-ai-news-deep.bat       # AI News Deep
-run-md-to-mp3.bat          # Markdown zu MP3
-run-random-educator.bat    # Random Educator
-run-random-pdf-reader.bat  # Random PDF Reader
-run-random-text-reader.bat # Random Text Reader
-run-daily.bat              # Daily Run
-run-cleanup.bat            # Cleanup
+run-tools.bat                         # Master-Launcher mit Auswahl
+run-daily.bat                         # Daily Run (News + PDF-Loop)
+
+news\run-ai-news.bat                  # AI News
+news\run-ai-news-deep.bat             # AI News Deep
+
+audiobooks\run-md-to-mp3.bat          # Markdown zu MP3
+audiobooks\run-ebooks-text-to-chunks.bat
+audiobooks\run-ebooks-chunks-to-mp3.bat
+
+readers\run-random-educator.bat       # Random Educator
+readers\run-random-pdf-reader.bat     # Random PDF Reader
+readers\run-random-text-reader.bat    # Random Text Reader
+readers\run-cleanup.bat               # Cleanup
 ```
+
+### Konfiguration und Status (news)
+
+- Config: `news/ai-news-config.json` (siehe `news/ai-news-config.example.json`)
+- State: `news/.ai-news-status/` (Diff-Tracking pro Quelle)
+- HTML-Report: `news/<output_prefix>_<timestamp>.html`
 
 ## Konventionen
 

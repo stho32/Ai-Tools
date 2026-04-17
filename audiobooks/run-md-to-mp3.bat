@@ -1,4 +1,5 @@
 @echo off
+cd /d "%~dp0"
 echo Starting MD to MP3 with uv...
 if "%~2"=="" (
     echo Usage: %0 ^<input_path^> ^<output_path^> [--model MODEL]

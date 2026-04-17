@@ -1,3 +1,4 @@
 @echo off
+cd /d "%~dp0"
 echo Starting Random Text Reader with uv...
 uv run python random_text_reader.py %*

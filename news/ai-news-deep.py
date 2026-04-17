@@ -7,7 +7,7 @@ from datetime import datetime
 from urllib.parse import urljoin, urlparse
 from bs4 import BeautifulSoup
 import requests
-from Lib.pdf_audio_tools import (
+from lib.news_utils import (
     clean_html,
     get_gpt4_analysis,
     load_previous_content,

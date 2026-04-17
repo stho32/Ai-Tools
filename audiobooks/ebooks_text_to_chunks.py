@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import os
 import argparse
-from Lib import text_split
+from lib import text_split
 import shutil
 
 def clear_output_directory(output_dir):

@@ -4,7 +4,7 @@ import sys
 import random
 import argparse
 from PyPDF2 import PdfReader
-from Lib.pdf_audio_tools import (
+from lib.pdf_audio_tools import (
     get_random_pdf,
     extract_text_from_pdf,
     call_gpt,

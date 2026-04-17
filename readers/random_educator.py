@@ -4,7 +4,7 @@ import sys
 import random
 import argparse
 from PyPDF2 import PdfReader
-from Lib.pdf_audio_tools import call_gpt, text_to_speech, play_audio, get_random_pdf, extract_text_from_pdf
+from lib.pdf_audio_tools import call_gpt, text_to_speech, play_audio, get_random_pdf, extract_text_from_pdf
 
 def prepare_content_with_gpt4(text, source_info):
     system_message = "Du bist ein erfahrener Lehrer/Trainer. Deine Aufgabe ist es, den gegebenen Text zu korrigieren, zu erklären und zusammenzufassen. Bitte sprich Deutsch."

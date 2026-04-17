@@ -2,6 +2,12 @@
 
 This project contains various tools for processing text, converting documents to audio, and analyzing news sources using AI.
 
+Tools are grouped by topic into top-level folders:
+
+- **`news/`** - Daily news scraper with HTML report
+- **`audiobooks/`** - Markdown / eBook to MP3 pipelines
+- **`readers/`** - Random PDF / text readers with TTS
+
 ## Requirements
 
 - Python 3.8 or higher
@@ -28,58 +34,64 @@ This project contains various tools for processing text, converting documents to
 
 ### Quick Start
 
-Use the master launcher to see all available tools:
+Use the master launcher (prints all available tools):
 ```cmd
 run-tools.bat
 ```
 
-### Available Tools
+### News (`news/`)
 
-#### 1. AI News Analysis
 ```cmd
 run-tools.bat ai-news
 run-tools.bat ai-news-deep
 ```
 
-#### 2. Markdown to MP3 Conversion
+Config lives in `news/ai-news-config.json` (see `news/ai-news-config.example.json`).
+The state for diff-based updates is kept in `news/.ai-news-status/`.
+
+### Audiobooks (`audiobooks/`)
+
 ```cmd
 run-tools.bat md-to-mp3 "C:\Books\Input" "C:\Books\Output"
 run-tools.bat md-to-mp3-pro "C:\Books\Input" "C:\Books\Output"
-```
-
-#### 3. Random Content Readers
-```cmd
-run-tools.bat random-educator
-run-tools.bat random-pdf-reader
-run-tools.bat random-text-reader
-```
-
-#### 4. EBook Processing
-```cmd
 run-tools.bat ebooks-text-to-chunks "C:\Books\input.txt" "C:\Books\chunks\"
 run-tools.bat ebooks-chunks-to-mp3 "C:\Books\chunks\"
 ```
 
-#### 5. Utility Tools
+### Readers (`readers/`)
+
+```cmd
+run-tools.bat random-educator
+run-tools.bat random-pdf-reader
+run-tools.bat random-text-reader
+run-tools.bat cleanup
+```
+
+### Daily run
+
 ```cmd
 run-tools.bat daily-run
-run-tools.bat cleanup
+REM or directly
+run-daily.bat
 ```
 
 ### Individual Scripts
 
-You can also run individual tools directly:
+You can also run individual tools directly via the per-area batch files:
 ```cmd
-run-ai-news.bat
-run-md-to-mp3.bat "C:\Books\Input" "C:\Books\Output"
-run-random-educator.bat
+news\run-ai-news.bat
+audiobooks\run-md-to-mp3.bat "C:\Books\Input" "C:\Books\Output"
+readers\run-random-educator.bat
 ```
 
 ### Direct uv Usage
 
-For more control, you can use uv directly:
+For more control, you can use uv directly from inside a tool directory:
 ```cmd
+cd news
 uv run python ai-news.py --config ai-news-config.json
+
+cd audiobooks
 uv run python md_to_mp3.py "C:\Books\Input" "C:\Books\Output"
 ```
 
