@@ -1,1 +1,0 @@
-python .\ai-news.py --config .\ai-news-config.json

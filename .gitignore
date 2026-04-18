@@ -1,11 +1,7 @@
-ai-news-config.json
 /pdfs/
 /ebooksAsText/
 __pycache__/
 *.mp3
 /temp_split/
 .smart-env/
-.ai-news-status/
 *.config.json
-tech_news*.html
-Lead-Developer-News*.html

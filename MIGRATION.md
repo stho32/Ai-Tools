@@ -30,16 +30,16 @@ Falls Sie vorher manuelle Virtual Environments verwendet haben:
 
 **Alt:**
 ```cmd
-python ai-news.py --config ai-news-config.json
+python md_to_mp3.py "C:\Books\Input" "C:\Books\Output"
 ```
 
 **Neu:**
 ```cmd
-run-tools.bat ai-news
+run-tools.bat md-to-mp3 "C:\Books\Input" "C:\Books\Output"
 # oder
-run-ai-news.bat
-# oder  
-uv run python ai-news.py --config ai-news-config.json
+run-md-to-mp3.bat "C:\Books\Input" "C:\Books\Output"
+# oder
+uv run python md_to_mp3.py "C:\Books\Input" "C:\Books\Output"
 ```
 
 ## Vorteile der neuen Struktur

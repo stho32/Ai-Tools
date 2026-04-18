@@ -12,18 +12,13 @@ Dieses Projekt ist ein umfangreiches Python-Projekt zur Verarbeitung, Analyse un
 - **Lib/**: Eigene Python-Bibliotheken für wiederverwendbare Funktionen.
     - **pdf_audio_tools.py**: Tools für PDF- und Audioverarbeitung, inkl. KI-Integration (OpenAI, Anthropic).
         - **Funktionen:**
-            - `clean_html(html_content)`: Bereinigt HTML-Inhalte und extrahiert Klartext.
-            - `get_gpt4_analysis(content, url, keywords, category)`: Führt KI-Analyse durch.
-            - `load_config(config_path=None)`: Lädt Konfiguration.
+            - `load_config(config_path=None)`: Lädt optionale Konfiguration (model_config für call_gpt).
             - `extract_text_from_pdf(pdf_path, start_page, num_pages)`: Extrahiert Text aus PDF.
             - `text_to_speech(text)`: Wandelt Text in Sprache um (OpenAI TTS).
-            - `get_content_diff(previous_content, current_content)`: Vergleicht Inhalte.
             - `play_audio(audio_contents, output_filename)`: Spielt generierte Audiodateien ab.
             - `call_gpt(system_message, user_message)`: Ruft GPT-Modelle auf (OpenAI/Anthropic).
-            - `get_website_content(url)`: Holt Website-Inhalte.
             - `chunk_to_speech(text)`: Wandelt Text-Abschnitt in Sprache um.
             - `get_random_pdf(directory)`: Wählt zufällige PDF aus Verzeichnis.
-            - u.v.m.
     - **text_split.py**: Funktionen zum Zerlegen von Texten in Chunks nach Zeichen oder Wörtern.
         - **Funktionen:**
             - `read_text_file(file_path)`: Liest Textdatei ein.
@@ -32,23 +27,10 @@ Dieses Projekt ist ein umfangreiches Python-Projekt zur Verarbeitung, Analyse un
             - `split_by_sentences(text, max_chunk_size)`: Teilt Text in Satz-Chunks.
             - `test()`: Testfunktion für Chunking.
 - **README.md**: Einstiegspunkt mit Hinweisen zur Nutzung der wichtigsten Skripte.
-- **requirements.txt**: Listet alle Python-Abhängigkeiten für das Projekt.
-- **run.bat**: Windows-Batchdatei zum Starten von Skripten.
+- **pyproject.toml**: Listet alle Python-Abhängigkeiten für das Projekt.
 
 ## Hauptskripte
 
-- **ai-news.py**: Skript zur Analyse und Verarbeitung von Nachrichtenquellen. Nutzt KI für Inhaltsanalyse und -vergleich.
-    - **Funktionen:**
-        - `main()`: Einstiegspunkt, lädt Konfiguration, verarbeitet Quellen, generiert HTML-Report.
-        - `process_source(source)`: Verarbeitet eine Nachrichtenquelle.
-        - `generate_html_report(results, timestamp)`: Erstellt HTML-Report.
-        - `get_gpt4_analysis(...)`: Führt GPT-Analyse durch.
-- **ai-news-deep.py**: Erweiterte Version zur tieferen Analyse von Webseiten, nutzt verschiedene KI-Modelle und Funktionen aus `Lib/`.
-    - **Funktionen:**
-        - `main()`: Hauptfunktion, verarbeitet Quellen, erstellt HTML-Report.
-        - `process_source_deep(source, max_pages)`: Durchsucht und analysiert Unterseiten.
-        - `generate_html_report(results, timestamp)`: Erstellt HTML-Report für Deep Crawl.
-- **ai-news-config.example.json**: Beispiel für eine Konfigurationsdatei mit Quellen und Einstellungen.
 - **cleanup.py**: Hilfsskript zur Bereinigung von temporären Dateien oder Verzeichnissen.
 - **daily-run.py**: Automatisiertes Skript für tägliche Aufgaben.
     - **Funktionen:**

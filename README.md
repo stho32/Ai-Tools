@@ -1,6 +1,6 @@
 # AI-Tools - Text Processing and Audio Conversion Tools
 
-This project contains various tools for processing text, converting documents to audio, and analyzing news sources using AI.
+This project contains various tools for processing text and converting documents to audio using AI.
 
 ## Requirements
 
@@ -35,32 +35,26 @@ run-tools.bat
 
 ### Available Tools
 
-#### 1. AI News Analysis
-```cmd
-run-tools.bat ai-news
-run-tools.bat ai-news-deep
-```
-
-#### 2. Markdown to MP3 Conversion
+#### 1. Markdown to MP3 Conversion
 ```cmd
 run-tools.bat md-to-mp3 "C:\Books\Input" "C:\Books\Output"
 run-tools.bat md-to-mp3-pro "C:\Books\Input" "C:\Books\Output"
 ```
 
-#### 3. Random Content Readers
+#### 2. Random Content Readers
 ```cmd
 run-tools.bat random-educator
 run-tools.bat random-pdf-reader
 run-tools.bat random-text-reader
 ```
 
-#### 4. EBook Processing
+#### 3. EBook Processing
 ```cmd
 run-tools.bat ebooks-text-to-chunks "C:\Books\input.txt" "C:\Books\chunks\"
 run-tools.bat ebooks-chunks-to-mp3 "C:\Books\chunks\"
 ```
 
-#### 5. Utility Tools
+#### 4. Utility Tools
 ```cmd
 run-tools.bat daily-run
 run-tools.bat cleanup
@@ -70,7 +64,6 @@ run-tools.bat cleanup
 
 You can also run individual tools directly:
 ```cmd
-run-ai-news.bat
 run-md-to-mp3.bat "C:\Books\Input" "C:\Books\Output"
 run-random-educator.bat
 ```
@@ -79,7 +72,6 @@ run-random-educator.bat
 
 For more control, you can use uv directly:
 ```cmd
-uv run python ai-news.py --config ai-news-config.json
 uv run python md_to_mp3.py "C:\Books\Input" "C:\Books\Output"
 ```
 

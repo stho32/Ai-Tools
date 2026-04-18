@@ -6,26 +6,10 @@ authors = [{name = "Your Name", email = "you@example.com"}]
 requires-python = ">=3.8"
 dependencies = [
     "PyPDF2>=3.0.0",
-    "beautifulsoup4>=4.12.0",
     "openai>=1.0.0",
-    "requests>=2.31.0",
     "pydub>=0.25.1",
     "anthropic>=0.18.0",
 ]
 
-[project.scripts]
-ai-news = "ai-news:main"
-ai-news-deep = "ai-news-deep:main"
-md-to-mp3 = "md_to_mp3:main"
-md-to-mp3-pro = "md_to_mp3_pro.md_to_mp3_pro:main"
-random-educator = "random_educator:main"
-random-pdf-reader = "random_pdf_reader:main"
-random-text-reader = "random_text_reader:main"
-ebooks-chunks-to-mp3 = "ebooks_chunks_to_mp3:main"
-ebooks-text-to-chunks = "ebooks_text_to_chunks:main"
-daily-run = "daily-run:main"
-cleanup = "cleanup:main"
-
-[build-system]
-requires = ["setuptools>=45", "wheel"]
-build-backend = "setuptools.build_meta"
+[tool.uv]
+package = false

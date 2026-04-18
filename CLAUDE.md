@@ -2,7 +2,7 @@
 
 ## Projektbeschreibung
 
-Sammlung von AI-Tools zur Textverarbeitung, Nachrichtenanalyse und Audio-Konvertierung.
+Sammlung von AI-Tools zur Textverarbeitung und Audio-Konvertierung.
 Die Tools nutzen OpenAI und Anthropic APIs fuer KI-gestuetzte Analyse und Text-to-Speech.
 
 ## TechStack
@@ -16,7 +16,7 @@ Die Tools nutzen OpenAI und Anthropic APIs fuer KI-gestuetzte Analyse und Text-t
 
 ```
 Ai-Tools/
-  *.py              # Hauptskripte (ai-news, md_to_mp3, random_*, daily-run, cleanup)
+  *.py              # Hauptskripte (md_to_mp3, random_*, ebooks_*, daily-run, cleanup)
   Lib/              # Wiederverwendbare Module (pdf_audio_tools, text_split)
   Ai-Documents/     # Projektdokumentation (coding-style, structure)
   Anforderungen/    # Anforderungsdokumente
@@ -35,10 +35,6 @@ uv sync
 ### Scripts ausfuehren
 
 ```bash
-# Nachrichtenanalyse
-uv run python ai-news.py --config ai-news-config.json
-uv run python ai-news-deep.py --config ai-news-config.json
-
 # Markdown zu MP3
 uv run python md_to_mp3.py <input-dir> <output-dir>
 
@@ -62,8 +58,6 @@ uv run python cleanup.py
 
 ```cmd
 run-tools.bat              # Master-Launcher mit Auswahl
-run-ai-news.bat            # AI News
-run-ai-news-deep.bat       # AI News Deep
 run-md-to-mp3.bat          # Markdown zu MP3
 run-random-educator.bat    # Random Educator
 run-random-pdf-reader.bat  # Random PDF Reader
